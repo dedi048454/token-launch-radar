@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — pre-token protocols ranked by implied value</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="pulse" aria-hidden="true"></span>
+    <h1>Token Radar</h1>
+    <p class="tagline">Pre-token protocols, ranked by what a launch would be worth — from the snapshot's own figures.</p>
+  </div>
+  <dl class="stats" id="stats"></dl>
+</header>
+
+<nav class="tabs" aria-label="Views">
+  <button type="button" data-tab="board" class="active" aria-pressed="true">Ranked board</button>
+  <button type="button" data-tab="live" aria-pressed="false">Live tokens</button>
+</nav>
+
+<section class="controls" aria-label="Filter the board">
+  <label>Search <input type="search" id="q" placeholder="Name or slug…" autocomplete="off"></label>
+  <label>Category <select id="category"><option value="all">All categories</option></select></label>
+  <label>Chain <select id="chain"><option value="all">All chains</option></select></label>
+  <label class="check"><input type="checkbox" id="watchlistOnly"> Watchlist only</label>
+  <p class="count" id="count" aria-live="polite"></p>
+</section>
+
+<main class="layout">
+  <div class="tablewrap">
+    <table id="board">
+      <thead>
+        <tr>
+          <th data-sort="rank" class="num sorted">Rank</th>
+          <th data-sort="name">Protocol</th>
+          <th data-sort="category">Category</th>
+          <th data-sort="chains">Chains</th>
+          <th data-sort="tvl_usd" class="num">TVL</th>
+          <th data-sort="change_7d" class="num">7d</th>
+          <th data-sort="age_days" class="num">Age</th>
+          <th data-sort="implied_value_usd" class="num">Implied value</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <table id="live" hidden>
+      <thead>
+        <tr>
+          <th>Protocol</th>
+          <th>Category</th>
+          <th>Chains</th>
+          <th class="num">TVL</th>
+          <th class="num">Market cap</th>
+          <th class="num">7d</th>
+        </tr>
+      </thead>
+      <tbody id="liveRows"></tbody>
+    </table>
+  </div>
+
+  <aside class="detail" id="detail" aria-label="Protocol detail">
+    <p class="empty">Select a protocol on the board to see its detail: the model's factors, the implied value, and the farm plan.</p>
+  </aside>
+</main>
+
+<section class="sandbox" aria-label="Model sandbox">
+  <h2>Try the model yourself</h2>
+  <p>Move a slider and the board re-ranks live from the same snapshot figures. The sandbox never changes board.json — the submitted board is the entry.</p>
+  <label>Growth weight <input type="range" id="growthWeight" min="0" max="1" step="0.05" value="0.5"> <output id="growthWeightOut">0.50</output></label>
+  <label>Maturity floor <input type="range" id="maturityFloor" min="0.5" max="0.8" step="0.05" value="0.6"> <output id="maturityFloorOut">0.60</output></label>
+  <button type="button" id="resetModel">Reset to the submitted model</button>
+  <p class="note" id="sandboxNote" hidden>The board below is re-ranked with your settings. Reset to see the submitted board.</p>
+</section>
+
+<section class="method" aria-label="How the model works">
+  <h2>How the implied value is worked out</h2>
+  <p><strong>Implied value = TVL × category multiple × growth × maturity.</strong></p>
+  <ul>
+    <li><strong>Category multiple</strong> — the median market-cap-per-TVL of the live-token protocols in the same category, read out of this snapshot (at least 3 peers, otherwise the snapshot-wide median). A DEX token trades at a different multiple from a lending token, and the snapshot itself says so. No protocol name is ever special-cased.</li>
+    <li><strong>Growth</strong> — the protocol's 7-day TVL change, clamped to −60%…+120%, at half weight: 1 + growth ÷ 100 × 0.5.</li>
+    <li><strong>Maturity</strong> — 0.6 + age ÷ 1095 days × 0.4, so a protocol that has run three years with no token counts more than a new one. Unknown age counts as 365 days.</li>
+  </ul>
+  <p>The watchlist is the floor, never the ceiling: every protocol on it is ranked, and the board adds the 160 pre-token protocols below the $50M floor with the most TVL — the early rows a radar exists to find. A protocol "records no token" in DefiLlama's record; that is not proof it has none. Live-token protocols are kept apart in their own view at their market caps. The implied value is this entry's own claim, never make.fun's.</p>
+  <p class="source" id="source"></p>
+</section>
+
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
